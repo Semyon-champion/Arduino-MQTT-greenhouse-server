@@ -1,0 +1,45 @@
+в нашей версии arduino есть встроенный wifi-module, который умееет работать как mqtt клиент
+развернул для начала на mac mqtt клиента paho, который умеет подключаться к mqtt брокерам и подписываться или публиковать там данные.
+инструкция по его разворачиванию находится здесь:
+https://habrahabr.ru/company/intel/blog/302338/
+
+при подключении к вайфай роутеру кинетик, ардуино находясь в sta режиме не переводился в режим sta+ap, который необходим для того, чтобы подключение ардуино к вайфай сети можно было настроить. 
+при этом соединение с сетью ардуино при попытке подключиться маком к нему и зайти в панель управления им через браузер, держалась нестабильно.
+в таком случае может помочь команда через браузер:
+
+To set new WiFi Mode you can go to http://<IPADDRESS>/wifi/setmode?mode=<MODE> to set new mode. mode=1 is for 'STA', mode=2 is for 'AP' only and mode=3 is for 'AP+STA'. I've created a little cron job on my server that checks the wifi mode and changes it if needed.
+
+вместо адреса я при этом подставлял 192.168.240.1, а MODE приравнимал 3.
+
+
+поменяв таким образом режим, я столкнулся с проблемой, что кинетик ардуино не видела, несмотря на то, что он стоял очень близко и качество сигнала было хорошим.
+помогло: 1. перепрошивка ардуино 2. смена настроек кинетика
+Удачная попытка перепрошивки arduino была связана с переключением на программатор AVR ISP (в инструменты -> программатор)
+прошивал с помощью инструмента UnoWifiFirmWARE updater на версию ESP8266(0.0.3)
+
+название ардуино сети стало: 
+
+в кинетике снёс режимы wps и wmm на той же вкладке
+
+ 
+
+общеполезные ссылки: 
+https://www.arduino.cc/en/Guide/ArduinoUnoWiFi#toc12
+https://github.com/jandrassy/arduino-firmware-wifilink/blob/ota/UNOWIFI_DEV_ED.md
+http://www.arduinolibraries.info/libraries/arduino-uno-wi-fi-dev-ed-library
+https://github.com/arduino-org/Esp-Link
+https://www.arduino.cc/en/Guide/ArduinoUnoWiFiFwUpdater
+
+10 pin = id 1
+11 pin = id 2
+7 pin = id 3
+12 pin = id 4
+13 pin = id 5
+
+
+ 
+на всякий случай памятка:
+при необходимости "жесткой" перезагрузки нужно:
+а) прошить, выбрав порт usb, скетчем esprecovery
+б) ввести arduino в dfu mode: отключить питание, подключить usb провод от компа, держа нажатой кнопку esp b/l
+в) "залить" firmware
