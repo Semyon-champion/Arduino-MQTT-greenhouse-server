@@ -76,8 +76,8 @@ client = mqtt.Client(userdata=ud)
 client.on_connect = on_connect
 client.on_message = on_message
 
-client.username_pw_set('ivswvecv', password='Epnb9MlZFfvU')
-client.connect("m20.cloudmqtt.com", 15516, 15)
+client.username_pw_set('client', password='password')
+client.connect("host", 00000, 00)
 
 DBconn = psycopg2.connect(host='localhost', user='postgres', password='postgres', dbname='sequoia')
 cursor = DBconn.cursor()
