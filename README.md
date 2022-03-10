@@ -10,3 +10,4 @@ The main file, which i've downloaded to Arduino's memory i will post here later,
 
 ### To make all works you also need to connect Python paho library:
 https://pypi.org/project/paho-mqtt/
+put it in 'js' folder.
