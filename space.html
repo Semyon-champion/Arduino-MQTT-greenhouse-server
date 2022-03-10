@@ -248,14 +248,14 @@ $.post(DATA_URL,
                   };
                   setInterval(timer, 0);  
 
-                  client = new Paho.MQTT.Client("m20.cloudmqtt.com", 35516, "16");
+                  client = new Paho.MQTT.Client("mqttservername", 00000, "00");
                 // set callback handlers
                   client.onConnectionLost = onConnectionLost;
                   client.onMessageArrived = onMessageArrived;
                   var options = {
                       useSSL: true,
-                      userName: "ivswvecv",
-                      password: "Epnb9MlZFfvU",
+                      userName: "username",
+                      password: "password",
                       onSuccess:onConnect,
                       onFailure:doFail,
 		      reconnect:true
