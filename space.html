@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>24ways - CSS Animations - Space</title>
+                <link rel="stylesheet" href="css/nv.d3.css" type="text/css">
+		<link rel="stylesheet" href="css/space.css" type="text/css">
+                <link rel="stylesheet" href="css/general.css" type="text/css">
+       <!--for http requests-->  
+         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>         
+       <!-- for messaging-->
+         <script src="js/paho.javascript-1.0.3/paho-mqtt.js" type="text/javascript"></script>
+       <!-- for charts-->
+         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js" charset="utf-8"></script>
+       
+         <script src="js/nv.d3.js" type="text/javascript"></script>
+       
+	</head>
+	<body>
+		<h1>VOSKHOD greenhouse monitor</h1>
+		<nav>
+			<ul>
+			<!--	<li id="back"><a href="http://24ways.org/200915">Back to article</a></li>  -->
+		        <!--   <li id="source"><a href="css/space.css">View CSS</a></li>  -->
+			</ul>
+		</nav>
+		<p>
+			<span id="fog">A long</span>
+			<span id="fog-2">long time</span>
+			<span id="glow">ago,</span>
+			<span id="light">in a</span>
+			<span id="stars">galaxy</span>
+			<span id="stars-2">far</span>
+			<span id="small-stars">far</span>
+			<span id="small-stars-2">away&hellip;</span>
+                       
+                        <table id="infotext" style="margin:auto"> 
+                        <td id="currenttime" style= "text-align: center; color:green"></td>
+                        </table>
+                   
+		</p>
+		<!-- Excuse the markup please -->
+<!-- script for CHARTING -->
+
+<script>
+//AUTH_URL = "http://172.16.207.42:8087/auth";
+DATA_URL = "http://structproduct.ru/data";
+
+//msgreply= function data_prepare(){
+//        var msg={};
+  //       msgreply =[(19,'2018-03-28T10:25:19')]; 
+//$(document).ready(function(){
+
+$.post(DATA_URL, 
+           {   sess_id: 9999988888
+            }, function(dbdata) {
+                msgreply = dbdata;
+              // result = data.split(/\r?\n/);
+              console.log(msgreply[3]);           
+	 // Wrapping in nv.addGraph allows for '0 timeout render', stores rendered charts in nv.graphs, and may do more in the future... it's NOT required
+		    var chart;
+		    var data;
+		    var legendPosition = "top";
+
+		    var randomizeFillOpacity = function() {
+			var rand = Math.random(0,1);
+			for (var i = 0; i < 100; i++) { // modify sine amplitude
+			    data[4].values[i].y = Math.sin(i/(5 + rand)) * 1 * rand - .25;
+			}
+			data[4].fillOpacity = rand;
+			chart.update();
+		    };
+
+		    var toggleLegend = function() {
+			if (legendPosition == "top") {
+			    legendPosition = "bottom";
+			} else {
+			    legendPosition = "top";
+			}
+			chart.legendPosition(legendPosition);
+			chart.update();
+		    };
+
+		    nv.addGraph(function() {
+			chart = nv.models.lineChart()
+			    .options({
+				height:600,
+				duration: 1000,
+				useInteractiveGuideline: true
+			    })
+			;
+		       
+			 //chart.forceY([-7,0,7]);
+			// chart sub-models (ie. xAxis, yAxis, etc) when accessed directly, return themselves, not the parent chart, so need to chain separately
+			chart.xAxis
+			  //  .axisLabel("Time (s)")
+			 //   .tickFormat(d3.format(',.1f'))
+			    .tickFormat(function(d) {return d3.time.format('%d/%m %H:%M')(new Date(d))})
+			    .staggerLabels(true)
+			;
+
+			chart.yAxis
+			    .axisLabel('Grad, ℃')
+			    .tickFormat(function(d) {
+				if (d == null) {
+				    return 'N/A';
+				}
+				return d3.format(',.1f')(d);
+			    })
+			;
+		//        data = sinAndCos();
+//			var msgreply=[];
+			data= sensorsdata(msgreply);        
+
+			d3.select('#chart1').append('svg')
+			    .datum(data)
+			    .call(chart);
+//-------------
+//			d3.select('.nv-x.nv-axis > g > g').selectAll('g.tick text').style('text-anchor', 'end'); 
+//			var xTicks = d3.select('.nv-x.nv-axis > g > g',_this.context.element).selectAll('g').selectAll('text');
+//			xTicks.attr('transform', function() { return 'rotate(' + angle + '-90,0)' }) ;
+//			xTicks.attr('text-anchor',function() {
+//			    var anchor;
+//			    if(angle > 0){ anchor = 'start'; }
+//			    else if(angle < 0){ anchor = 'end'; }
+//			    else { anchor = 'middle'; }
+//			    return anchor;
+//			});
+//--------------------
+
+			nv.utils.windowResize(chart.update);
+
+			return chart;
+		    });
+
+
+	function sensorsdata(msgreply) {
+	       var inttemp1=[],
+                   inttemp2 =[],
+                   inttemp3 = []
+               ;
+		     for (ind in msgreply) {
+                        if (ind>350) {
+	//		console.log("idn:", msgreply[ind][4],"-",msgreply[ind][0]); 
+//                        console.log(Date(msgreply[ind][4]).toString());
+               		inttemp1.push({x:new Date(msgreply[ind][4]), y: msgreply[ind][0]});
+               		inttemp2.push({x:new Date(msgreply[ind][4]), y: msgreply[ind][1]});
+               		inttemp3.push({x:new Date(msgreply[ind][4]), y: msgreply[ind][2]});
+                         };
+		    };
+//                    inttemp1.push({x:new Date('2018-03-28T10:25:19'), y:19});
+//                   inttemp1.push({x:new Date('2018-03-28T10:35:19'), y:20});
+//                    inttemp1.push({x:new Date('2018-03-28T10:45:19'), y:19});
+	 //           };
+	//	    console.log("temp:",inttemp1)
+	  //        temp.push({x:time.mktime(time.strptime('2018-03-28 13:25:19','%Y-%m-%d %H:%M:%S')), y:18});
+	 
+	      return [
+		    {
+			values: inttemp1,
+			key: "3m int temperature",
+			color: "#2ca02c"
+		    }
+                    ,
+		    {
+			area: true,
+			values: inttemp2,
+			key: "10cm int temperature",
+			color: "#ff7f0e",
+			strokeWidth: 1,
+			classed: 'dashed'
+		    },
+		    {
+			area: true,
+			values: inttemp3,
+			key: "2m int temperature",
+			color: "#EF9CFB",
+			fillOpacity: .1
+		    }
+		];
+	    };
+
+       });
+
+// });
+
+    function sinAndCos() {
+        var sin = [],
+            sin2 = [],
+            cos = [],
+            rand = [],
+            rand2 = []
+            ;
+
+        for (var i = 0; i < 100; i++) {
+            sin.push({x: i, y: i % 10 == 5 ? null : Math.sin(i/10) }); //the nulls are to show how defined works
+            sin2.push({x: i, y: Math.sin(i/5) * 5 - 0.25});
+            cos.push({x: i, y: .5 * Math.cos(i/10)});
+            rand.push({x:i, y: Math.random() / 10});
+            rand2.push({x: i, y: Math.cos(i/10) + Math.random() / 10 })
+        }
+
+        return [
+            {
+                area: true,
+                values: sin,
+                key: "Sine Wave",
+                color: "#ff7f0e",
+                strokeWidth: 4,
+                classed: 'dashed'
+            },
+            {
+                values: cos,
+                key: "3m int temperature",
+                color: "#2ca02c"
+            },
+            {
+                values: rand,
+                key: "Random Points",
+                color: "#2222ff"
+            },
+            {
+                values: rand2,
+                key: "Random Cosine",
+                color: "#667711",
+                strokeWidth: 3.5
+            },
+            {
+                area: true,
+                values: sin2,
+                key: "Fill opacity",
+                color: "#EF9CFB",
+                fillOpacity: .1
+            }
+        ];
+    }
+
+</script> 
+
+<!-- script for current data value collecting -->
+        <script type="text/JavaScript">  
+                  var lastdate;
+                  function timer(){
+                        var date = new Date();
+                        var time = date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
+                        document.getElementById("currenttime").innerHTML=date;
+                        lastdate=date;
+                  };
+                  setInterval(timer, 0);  
+
+                  client = new Paho.MQTT.Client("m20.cloudmqtt.com", 35516, "16");
+                // set callback handlers
+                  client.onConnectionLost = onConnectionLost;
+                  client.onMessageArrived = onMessageArrived;
+                  var options = {
+                      useSSL: true,
+                      userName: "ivswvecv",
+                      password: "Epnb9MlZFfvU",
+                      onSuccess:onConnect,
+                      onFailure:doFail,
+		      reconnect:true
+		  }   
+                  var msg;
+                  // connect the client
+                  client.connect(options);
+                  function onConnect() {
+                    // Once a connection has been made, make a subscription and send a message.
+//  logging             console.log("onConnect");
+                    client.subscribe("test");
+                 //   client.subscribe("ANSWERS");
+                  }                 
+			  function doFail(e){
+// logging	    console.log(e);
+			  }
+			  // called when the client loses its connection
+			  function onConnectionLost(responseObject) {
+				  if (responseObject.errorCode !== 0) {
+				  console.log("onConnectionLost:"+responseObject.errorMessage);
+				  }
+			  }
+			  // called when a message arrives
+			  function onMessageArrived(message) {
+//logging	      console.log("onMessageArrived:"+message.payloadString);
+//logging	      console.log("onMessageArrived, DestinationName:"+message.destinationName);
+			   	//	              document.getElementById("infotext").innerHTML=message.payloadString;
+			      screenupdate(message);                  
+			  }
+			 //parsing and updating data on screen
+			  function screenupdate(message){
+			       msg=JSON.parse(message.payloadString);  
+                               var info = msg.info
+			      document.getElementById("lasttime").innerHTML=msg.time;
+			      document.getElementById("timeapprox").innerHTML=lastdate.getHours()+":"+lastdate.getMinutes()+":"+lastdate.getSeconds();
+                 // sensors state
+				      if (info[1].type=="sr" && info[1].id=="1" && info[1].ms=="ah"){
+					     document.getElementById("insidehighhum").innerHTML=info[1].value;
+				      }
+				      if (info[0].type=="sr" && info[0].id=="1" && info[0].ms=="at"){
+					      document.getElementById("insidehightemp").innerHTML=info[0].value;
+				      } 
+				      if (info[1].type=="sr" && info[1].id=="2" && info[1].ms=="ah"){
+					     document.getElementById("insidelowhum").innerHTML=info[1].value;
+				      }
+				      if (info[0].type=="sr" && info[0].id=="2" && info[0].ms=="at"){
+					      document.getElementById("insidelowtemp").innerHTML=info[0].value;
+				      } 
+				      if (info[1].type=="sr" && info[1].id=="3" && info[1].ms=="ah"){
+					     document.getElementById("insidefarhum").innerHTML=info[1].value;
+				      }
+				      if (info[0].type=="sr" && info[0].id=="3" && info[0].ms=="at"){
+					      document.getElementById("insidefartemp").innerHTML=info[0].value;
+				      } 
+                                      if (info[1].type=="sr" && info[1].id=="4" && info[1].ms=="ah"){
+					     document.getElementById("humidity").innerHTML=info[1].value;
+				      }
+				      if (info[0].type=="sr" && info[0].id=="4" && info[0].ms=="at"){
+					      document.getElementById("temperature").innerHTML=info[0].value;
+				      } 
+                                      if (info[1].type=="sr" && info[1].id=="5" && info[1].ms=="ah"){
+					     document.getElementById("outhumidity").innerHTML=info[1].value;
+				      }
+				      if (info[0].type=="sr" && info[0].id=="5" && info[0].ms=="at"){
+					      document.getElementById("outtemperature").innerHTML=info[0].value;
+				      } 
+                                      if (info[1].type=="sr" && info[1].id=="7" && info[1].ms=="sh"){
+					     document.getElementById("soilhum_c").innerHTML=info[1].value;
+				      }
+				      if (info[0].type=="sr" && info[0].id=="6" && info[0].ms=="sh"){
+					      document.getElementById("soilhum_f").innerHTML=info[0].value;
+				      } 
+        	//	        relay's switchers;
+				      if (info[0].type=="rl" && info[0].id=="1" && info[0].ms=="ht" && info[0].value=="0"){
+					     document.getElementById("switcher_cond").innerHTML="OFF";
+				      }
+				      if (info[0].type=="rl" && info[0].id=="1" && info[0].ms=="ht" && info[0].value=="1"){
+				      	     document.getElementById("switcher_cond").innerHTML="ON";
+				      } 
+			  }
+                          function click_react(){
+                    	      var switcher=document.getElementById("sw");
+                              if (switcher.checked){
+//                              alert('ckeck is on');        
+                              //msgtosend = new Paho.MQTT.Message("ON");
+                              //msgtosend.destinationName = "REQUESTS";
+                              //client.send(msgtosend); 
+                                 client.publish("REQUESTS","ON", 2, false); 
+                       }
+                              else {
+  //                            alert('ckeck is off');
+                              client.publish("REQUESTS","OFF", 2, false); 
+                              }
+                          }
+        </script>
+<table id="infotext">
+<td style = "width:570px">
+	<table id ="infotext" style="border: 1px solid green;">
+	<tr>
+	<td>last info we got from arduino since:</td>
+	<td id="lasttime"></td>
+	<td id="timeapprox"></td>
+	</tr>
+	<tr>
+	<td> inside air temperature 3m above the earth, ℃: </td>
+	<td id = "insidehightemp"  >   </td>
+	<td></td>
+	</tr>
+	<tr>
+	<td> inside air humidity 3m above the earth, %: </td>
+	<td id = "insidehighhum"  >  </td>
+	<td></td>
+	</tr>
+	<tr>
+	<td> inside air temperature 10cm above the earth, ℃: </td>
+	<td id = "insidelowtemp"  >   </td>
+	<td></td>
+	</tr>
+	<tr>
+	<td> inside air humidity 10cm above the earth, %: </td>
+	<td id = "insidelowhum"  >  </td>
+	<td></td>
+	</tr>
+	<tr>
+	<td> inside air temperature 2m above the earth (farthest point), ℃: </td>
+	<td id = "insidefartemp"  >   </td>
+	<td></td>
+	</tr>
+	<tr>
+	<td> inside air humidity 2m above the earth (farthest point), %: </td>
+	<td id = "insidefarhum"  >  </td>
+	<td></td>
+	</tr>
+	<tr>
+	<td> inside air temperature (reserv), ℃: </td>
+	<td id = "temperature"  >   </td>
+	<td></td>
+	</tr>
+	<tr>
+	<td> inside air humidity (reserv), %: </td>
+	<td id = "humidity"  >  </td>
+	<td></td>
+	</tr>
+	<tr>
+	<td> outside air temperature, ℃: </td>
+	<td id = "outtemperature"  >   </td>
+	<td></td>
+	</tr>
+	<tr>
+	<td> outside air humidity, %: </td>
+	<td id = "outhumidity"  >  </td>
+	<td></td>
+	</tr>
+	<tr>
+	<td> humidity of sequoia soil, %: </td>
+	<td id = "soilhum_c"  >   </td>
+	<td></td>
+	</tr>
+	<tr>
+	<td> soil humidity in box, %: </td>
+	<td id = "soilhum_f"  >  </td>
+	<td></td>
+	</tr>
+	<tr>
+	<td> heater's switcher (on/off): </td>
+	<td id = "switcher_cond"></td>
+	<td><div class="switcher">
+		<input id="sw" type="checkbox" class="switcher-value" onclick="click_react();">
+		<label for="sw" class="sw_btn"></label>
+		<div class="bg"></div>
+	</div>
+	</td>
+	</tr>
+	</table>
+</td>
+<td style="vertical-align:top">
+<div id="chart1"></div>
+<!--<div id='chart'>
+  <svg style='width:960px height:500px'> </svg>
+</div>-->
+</td>
+</table>
+<p> </p>
+<!--
+<table>
+<div id="chart1"></div>
+<div id="chart1" style='width:5960px height:3500px'></div>
+</table>-->
+
+
+</body>
+</html>
